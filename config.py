@@ -1,4 +1,6 @@
 # ================================================================
+# config.py — Module 03 Configuration
+# ================================================================
 # This file reads settings from the .env file.
 # It never contains passwords or connection strings directly.
 # ================================================================
@@ -9,19 +11,13 @@ from dotenv import load_dotenv
 # Load all variables from .env into the environment
 load_dotenv()
 
-INDUSTRY       = os.getenv("INDUSTRY",       "healthcare")
-LEARNER_SCHEMA = os.getenv("LEARNER_SCHEMA", "learner_05")
+INDUSTRY       = os.getenv("INDUSTRY",       "insurance")
+LEARNER_SCHEMA = os.getenv("LEARNER_SCHEMA", "learner05")
 
-# Use .cwd() because __file__ is only for .py scripts
-PROJECT_ROOT = pathlib.Path(os.getcwd()).resolve()
-SQL_DIR = PROJECT_ROOT / "sql"
-DATA_DIR = PROJECT_ROOT / "data" / "raw-data.csv"
-
-# Optional: Ensure the directories exist so the tests don't fail
-SQL_DIR.mkdir(exist_ok=True)
-(PROJECT_ROOT / "data").mkdir(exist_ok=True)
-
-print(f"Paths set! SQL_DIR is: {SQL_DIR}")
+PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
+DATA_DIR     = PROJECT_ROOT / "data"
+SQL_DIR      = PROJECT_ROOT / "sql"
+DATA_DIR.mkdir(exist_ok=True)
 
 RAW_DATA_PATH = DATA_DIR / "raw-data.csv"
 
