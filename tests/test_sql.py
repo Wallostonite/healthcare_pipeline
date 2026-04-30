@@ -15,7 +15,8 @@ from src.data_extractor import DataExtractor
 def test_sql_files_exist():
     """All 5 SQL teaching files must exist in the sql/ directory."""
     from config import SQL_DIR
-    expected = ["sql_data_extractor.sql"]
+    expected = ["01_basics.sql","02_aggregation.sql","03_joins.sql",
+                "04_advanced.sql","05_extract_raw_data.sql"]
     for fname in expected:
         assert (SQL_DIR / fname).exists(), f"SQL file missing: {fname}"
     print("  PASS: test_sql_files_exist")
@@ -24,7 +25,7 @@ def test_sql_files_exist():
 def test_sql_files_contain_select_keyword():
     """Each SQL file must contain at least one SELECT statement."""
     from config import SQL_DIR
-    for fname in ["sql_data_extractor.sql"]:
+    for fname in ["01_basics.sql","02_aggregation.sql","03_joins.sql"]:
         content = (SQL_DIR / fname).read_text()
         assert "SELECT" in content.upper(), f"No SELECT found in {fname}"
     print("  PASS: test_sql_files_contain_select_keyword")
@@ -33,7 +34,7 @@ def test_sql_files_contain_select_keyword():
 def test_extract_sql_contains_industry_placeholder():
     """05_extract_raw_data.sql must use {industry} placeholder."""
     from config import SQL_DIR
-    content = (SQL_DIR / "sql_data_extractor.sql").read_text()
+    content = (SQL_DIR / "05_extract_raw_data.sql").read_text()
     assert "{industry}" in content,         "Extraction SQL must use {industry} placeholder for multi-schema support"
     print("  PASS: test_extract_sql_contains_industry_placeholder")
 
