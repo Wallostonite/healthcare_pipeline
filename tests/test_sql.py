@@ -3,29 +3,33 @@
 # ================================================================
 
 import sys, pathlib
-_root = pathlib.Path(__file__).resolve().parent.parent
+try:
+    # Works when running as a .py script
+    _root = pathlib.Path(__file__).resolve().parent.parent
+except NameError:
+    # Works when running in a Jupyter Notebook/Interactive shell
+    _root = pathlib.Path.cwd().parent
+
 if str(_root) not in sys.path:
     sys.path.insert(0, str(_root))
+
 
 import pandas as pd
 from src.query_runner   import SQLQueryRunner
 from src.data_extractor import DataExtractor
 
-
 def test_sql_files_exist():
     """All 5 SQL teaching files must exist in the sql/ directory."""
     from config import SQL_DIR
-    expected = ["01_basics.sql","02_aggregation.sql","03_joins.sql",
-                "04_advanced.sql","05_extract_raw_data.sql"]
+    expected = ["sql_data_extractor.sql"]
     for fname in expected:
         assert (SQL_DIR / fname).exists(), f"SQL file missing: {fname}"
     print("  PASS: test_sql_files_exist")
 
-
 def test_sql_files_contain_select_keyword():
     """Each SQL file must contain at least one SELECT statement."""
     from config import SQL_DIR
-    for fname in ["01_basics.sql","02_aggregation.sql","03_joins.sql"]:
+    for fname in ["sql_data_extractor.sql"]:
         content = (SQL_DIR / fname).read_text()
         assert "SELECT" in content.upper(), f"No SELECT found in {fname}"
     print("  PASS: test_sql_files_contain_select_keyword")
@@ -34,7 +38,7 @@ def test_sql_files_contain_select_keyword():
 def test_extract_sql_contains_industry_placeholder():
     """05_extract_raw_data.sql must use {industry} placeholder."""
     from config import SQL_DIR
-    content = (SQL_DIR / "05_extract_raw_data.sql").read_text()
+    content = (SQL_DIR / "sql_data_extractor.sql").read_text()
     assert "{industry}" in content,         "Extraction SQL must use {industry} placeholder for multi-schema support"
     print("  PASS: test_extract_sql_contains_industry_placeholder")
 
@@ -69,8 +73,8 @@ def test_query_runner_history_records_each_run():
 def test_extractor_synthetic_data_has_required_columns():
     """Synthetic fallback data must contain all required columns."""
     raw = DataExtractor._synthetic_raw_data(50)
-    required = ["employee_id","department","salary","performance_rating",
-                "years_experience","source_schema","extracted_date"]
+    required = ["patient_id","first_name","last_name","date_of_birth",
+                "insurance_type","source_schema","extracted_date"]
     for col in required:
         assert col in raw.columns, f"Synthetic data missing column: {col}."
     print("  PASS: test_extractor_synthetic_data_has_required_columns")

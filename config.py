@@ -11,8 +11,8 @@ from dotenv import load_dotenv
 # Load all variables from .env into the environment
 load_dotenv()
 
-INDUSTRY       = os.getenv("INDUSTRY",       "insurance")
-LEARNER_SCHEMA = os.getenv("LEARNER_SCHEMA", "learner05")
+INDUSTRY       = os.getenv("INDUSTRY",       "healthcare")
+LEARNER_SCHEMA = os.getenv("LEARNER_SCHEMA", "learner_05")
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
 DATA_DIR     = PROJECT_ROOT / "data"
