@@ -143,15 +143,16 @@ class SQLQueryRunner:
         Used during the teaching session to show SQL concepts live.
         """
         demos = [
-            ("DISTINCT departments",
-             f"SELECT DISTINCT department FROM {self.industry}.employees ORDER BY department"),
+            ("DISTINCT insurance_type",
+             f"SELECT DISTINCT insurance_type FROM {self.industry}.patients ORDER BY insurance_type"),
 
-            ("Employees earning over £100k",
-             f"SELECT first_name, last_name, department, salary FROM {self.industry}.employees WHERE salary > 100000 ORDER BY salary DESC LIMIT 10"),
+            ("Patients types",
+             f"SELECT first_name, last_name, insurance_type, blood_group FROM {self.industry}.patients WHERE blood_group IN ('O-', 'B-') ORDER BY blood_group DESC"),
 
             ("Active employees in Engineering or Data Science",
-             f"SELECT first_name, salary FROM {self.industry}.employees WHERE department IN ('Engineering', 'Data Science') AND is_active = TRUE ORDER BY salary DESC LIMIT 10"),
+             f"SELECT first_name, insurance_type FROM {self.industry}.patients WHERE insurance_type IN ('Private', 'Corporate')")
         ]
+
 
         for title, sql in demos:
             print(f"\n── {title}:")
@@ -163,35 +164,37 @@ class SQLQueryRunner:
         """Demo groupby queries from 02_aggregation.sql."""
         sql = f"""
             SELECT
-                department,
-                COUNT(*) AS headcount,
-                ROUND(AVG(salary)::NUMERIC, 0) AS avg_salary,
-                ROUND(MAX(salary)::NUMERIC, 0) AS max_salary
-            FROM {self.industry}.employees
-            WHERE salary IS NOT NULL
-            GROUP BY department
-            ORDER BY avg_salary DESC
+                patient_id,
+                COUNT(*) AS num_bills,
+                ROUND(SUM(amount_charged)::NUMERIC, 2) AS lifetime_billed,
+                ROUND(SUM(patient_paid)::NUMERIC, 2) AS paid_by_patient,
+                ROUND(SUM(insurance_paid)::NUMERIC, 2) AS paid_by_insurance
+            FROM {self.industry}.billing
+            GROUP BY patient_id
+            ORDER BY patient_id;
         """
-        print("\n── Department Salary Summary:")
+        print("\n── Patient Billing Summary:")  # Updated label
         df = self.run(sql)
         if not df.empty:
             print(df.to_string(index=False))
+
 
     def demo_joins(self) -> None:
         """Demo join query from 03_joins.sql."""
         sql = f"""
             SELECT
-                e.first_name, e.last_name, e.department,
-                COUNT(s.sale_id) AS num_sales,
-                ROUND(COALESCE(SUM(s.total_amount), 0)::NUMERIC, 2) AS total_revenue
-            FROM {self.industry}.employees AS e
-            LEFT JOIN {self.industry}.sales AS s ON e.employee_id = s.employee_id
-            WHERE e.is_active = TRUE
-            GROUP BY e.employee_id, e.first_name, e.last_name, e.department
-            ORDER BY total_revenue DESC
+                p.first_name, 
+                p.last_name, 
+                p.insurance_type,
+                COUNT(b.bill_id) AS num_bills,
+                ROUND(COALESCE(SUM(b.amount_charged), 0)::NUMERIC, 2) AS total_billed
+            FROM {self.industry}.patients AS p
+            LEFT JOIN {self.industry}.billing AS b ON p.patient_id = b.patient_id
+            GROUP BY p.patient_id, p.first_name, p.last_name, p.insurance_type
+            ORDER BY total_billed DESC
             LIMIT 10
         """
-        print("\n── Top 10 Employees by Sales Revenue:")
+        print("\n── Top 10 Patients by Total Billed Amount:")
         df = self.run(sql)
         if not df.empty:
             print(df.to_string(index=False))
