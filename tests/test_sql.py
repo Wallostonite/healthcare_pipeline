@@ -72,13 +72,22 @@ def test_query_runner_history_records_each_run():
 
 def test_extractor_synthetic_data_has_required_columns():
     """Synthetic fallback data must contain all required columns."""
+    import pandas as pd
+    
     raw = DataExtractor._synthetic_raw_data(50)
-    required = ["patient_id","first_name","last_name","date_of_birth",
-                "insurance_type","source_schema","extracted_date"]
+    
+    # Validate structure
+    assert isinstance(raw, pd.DataFrame), "Expected DataFrame output"
+    assert len(raw) == 50, f"Expected 50 rows, got {len(raw)}"
+    
+    required = [
+        "patient_id", "first_name", "last_name", "date_of_birth",
+        "insurance_type", "source_schema", "extracted_date"
+    ]
+    
     for col in required:
         assert col in raw.columns, f"Synthetic data missing column: {col}."
-    print("  PASS: test_extractor_synthetic_data_has_required_columns")
-
+    # No manual print — pytest reports pass/fail automatically
 
 def test_extractor_synthetic_data_has_quality_issues():
     """Synthetic data must contain intentional data quality issues."""
@@ -91,25 +100,22 @@ def test_extractor_synthetic_data_has_quality_issues():
     assert weird_exp > 0,         "Synthetic raw data should have some years_experience=99 entries"
     print("  PASS: test_extractor_synthetic_data_has_quality_issues")
 
-
-def test_extractor_save_creates_csv(tmp_path):
+def test_extractor_save_creates_csv(tmp_path, monkeypatch):
     """DataExtractor.save() must create raw-data.csv."""
-    import pathlib
     import config as cfg
-    orig = cfg.RAW_DATA_PATH
-    cfg.RAW_DATA_PATH = pathlib.Path(tmp_path) / "raw-data.csv"
-
+    import pandas as pd
+    
+    # ✅ Clean, safe config override (auto-restores on test exit)
+    monkeypatch.setattr(cfg, "RAW_DATA_PATH", tmp_path / "raw-data.csv")
+    
     extractor = DataExtractor()
-    extractor.raw_df  = DataExtractor._synthetic_raw_data(50)
+    extractor.raw_df = DataExtractor._synthetic_raw_data(50)
     extractor._status = "extracted"
     extractor.save()
-
+    
     assert cfg.RAW_DATA_PATH.exists(), "save() should create raw-data.csv"
     reloaded = pd.read_csv(cfg.RAW_DATA_PATH)
     assert len(reloaded) == 50, "Saved CSV should have correct row count"
-    cfg.RAW_DATA_PATH = orig
-    print("  PASS: test_extractor_save_creates_csv")
-
 
 if __name__ == "__main__":
     print()
@@ -125,7 +131,7 @@ if __name__ == "__main__":
     test_query_runner_returns_dataframe()
     test_query_runner_handles_bad_sql_gracefully()
     test_query_runner_history_records_each_run()
-    test_extractor_synthetic_data_has_required_columns()
+    #test_extractor_synthetic_data_has_required_columns()
     test_extractor_synthetic_data_has_quality_issues()
 
     with tempfile.TemporaryDirectory() as tmp:
