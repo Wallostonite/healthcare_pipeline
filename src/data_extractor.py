@@ -50,7 +50,7 @@ class DataExtractor:
         logger.info(f"[EXTRACT] Starting extraction — industry: {self.industry}")
 
         if DB_AVAILABLE:
-            self.raw_df = self.runner.run_file("05_extract_data.sql")
+            self.raw_df = self.runner.run_file("sql_data_extractor.sql")
         else:
             logger.warning("[EXTRACT] DB unavailable — generating synthetic raw data")
             self.raw_df = self._synthetic_raw_data()

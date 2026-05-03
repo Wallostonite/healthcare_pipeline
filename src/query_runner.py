@@ -26,6 +26,7 @@
 # ================================================================
 
 import sys, pathlib, time
+from sqlalchemy import text
 
 _root = pathlib.Path(__file__).resolve().parent
 while not (_root / "config.py").exists() and _root != _root.parent:
@@ -77,15 +78,20 @@ class SQLQueryRunner:
         start_time = time.time()   # record start time for performance logging
 
         try:
-            # pd.read_sql() executes SQL and returns a DataFrame
-            # params → passed as bind parameters to prevent SQL injection
-            df = pd.read_sql(sql, engine, params=params)
+            # ✅ Wrap SQL in text() for SQLAlchemy 2.0 compatibility
+            query = text(sql)
+            
+            # ✅ Conditionally pass params to avoid ImmutableDict bug
+            if params:
+                df = pd.read_sql(query, engine, params=params)
+            else:
+                df = pd.read_sql(query, engine)
 
             duration_ms = round((time.time() - start_time) * 1000, 1)
 
             # Record this query in the history log
             self.history.append({
-                "sql_preview": sql[:80].strip(),   # first 80 chars for the log
+                "sql_preview": sql[:80].strip(),
                 "rows":        len(df),
                 "cols":        len(df.columns),
                 "duration_ms": duration_ms,
