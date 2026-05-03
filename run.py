@@ -6,7 +6,7 @@
 #
 # WHAT HAPPENS:
 #   1. Demo SQL concepts (basics, aggregation, joins) in the terminal
-#   2. Run the full extraction query (05_extract_raw_data.sql)
+#   2. Run the full extraction query (sql_data_extractor.sql)
 #   3. Save raw-data.csv to data/
 # ================================================================
 
